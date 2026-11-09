@@ -13,5 +13,9 @@ namespace EmployeeManagement.Server.Models
 
         [StringLength(500)]
         public string? Description { get; set; }
+
+        public ICollection<ProjectEmployee> ProjectEmployees { get; set; } = new List<ProjectEmployee>();
+
+        public ICollection<EmployeeTask> Tasks { get; set; } = new List<EmployeeTask>();
     }
 }

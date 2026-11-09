@@ -22,5 +22,7 @@ namespace EmployeeManagement.Server.Models
         public Project Project { get; set; } = null!;
 
         public string? AssignedToUserId { get; set; }
+
+        public ApplicationUser? AssignedToUser { get; set; }
     }
 }

@@ -4,7 +4,10 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import './App.css'
 
+// Komponenti kryesor i template-it React: nuk merr parametra dhe kthen pamjen JSX qe shfaqet ne browser.
+// Ende nuk dergon kerkesa te API; autentikimi dhe menaxhimi nga nderfaqja jane pune e ardhshme.
 function App() {
+  // State ruan numeruesin ne browser; setCount shkakton rifreskimin e pamjes, pa shkruar ne SQL Server.
   const [count, setCount] = useState(0)
 
   return (

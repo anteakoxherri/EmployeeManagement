@@ -13,9 +13,11 @@ namespace EmployeeManagement.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20261109225209_AddEmployeeProjectTaskModels")]
+    // Pamja automatike e modelit pas shtimit te projekteve/task-eve; emrat e vjeter jane pjese e historikut.
     partial class AddEmployeeProjectTaskModels
     {
         /// <inheritdoc />
+        // Merr ModelBuilder dhe pershkruan modelin e kesaj migration, pa ndryshuar te dhena te perdoruesve.
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618

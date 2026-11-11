@@ -6,9 +6,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EmployeeManagement.Server.Migrations
 {
     /// <inheritdoc />
+    // Migration fillestare e gjeneruar nga EF Core: krijon skemen baze te ASP.NET Core Identity.
+    // Eshte histori e databazes; per ndryshime te reja zakonisht shtojme migration te ri.
     public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
+        // Merr ndertuesin e veprimeve SQL; zbatohet kur kjo migration aplikohet me Update-Database.
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -197,6 +200,7 @@ namespace EmployeeManagement.Server.Migrations
         }
 
         /// <inheritdoc />
+        // Merr te njejtin ndertues dhe pershkruan kthimin pas te ndryshimeve; nuk thirret nga nje GET API.
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

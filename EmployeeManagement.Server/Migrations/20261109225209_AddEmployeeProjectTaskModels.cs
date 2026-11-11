@@ -5,9 +5,12 @@
 namespace EmployeeManagement.Server.Migrations
 {
     /// <inheritdoc />
+    // Shton fushat e profilit dhe tabelat e projekteve, anetaresimeve dhe task-eve.
+    // EF Core e gjeneroi nga ndryshimi i modeleve; kjo klase ruan hapat per databazat ekzistuese.
     public partial class AddEmployeeProjectTaskModels : Migration
     {
         /// <inheritdoc />
+        // Merr MigrationBuilder dhe pershkruan shtimin e kolonave, tabelave, indekseve dhe lidhjeve.
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
@@ -117,6 +120,7 @@ namespace EmployeeManagement.Server.Migrations
         }
 
         /// <inheritdoc />
+        // Pershkruan heqjen e ketyre ndryshimeve kur kthehemi te migration paraardhese; mund te humbase te dhena.
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

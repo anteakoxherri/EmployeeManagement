@@ -13,9 +13,11 @@ namespace EmployeeManagement.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20261108191701_InitialCreate")]
+    // Pjesa automatike e migration fillestare: ruan modelin e atij momenti, jo gjendjen aktuale te rreshtave.
     partial class InitialCreate
     {
         /// <inheritdoc />
+        // Pershkruan modelin pas Up per historikun e EF Core; kodi zakonisht gjenerohet, nuk shkruhet me dore.
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618

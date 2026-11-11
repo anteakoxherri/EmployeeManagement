@@ -4,6 +4,8 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
+// ESLint kontrollon gabime dhe rregulla te kodit JavaScript/React; nuk ndryshon sjelljen e API-se.
+// Dosja dist perjashtohet sepse permban rezultatin e gjeneruar nga build-i.
 export default defineConfig([
   globalIgnores(['dist']),
   {

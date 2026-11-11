@@ -1,33 +1,28 @@
+using EmployeeManagement.Server.DTOs;
+using EmployeeManagement.Server.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagement.Server.Controllers
 {
+    // Controller demonstrues i template-it, i ruajtur per te mos ndryshuar endpoint-in ekzistues.
+    // Gjenerimi i te dhenave eshte ne service; ky controller merret vetem me kerkesen HTTP.
     [ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
+        private readonly IWeatherForecastService _weatherForecastService;
 
-        private readonly ILogger<WeatherForecastController> _logger;
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        // Merr implementimin permes DI, njesoj si controllers e perdoruesve dhe punonjesve.
+        public WeatherForecastController(IWeatherForecastService weatherForecastService)
         {
-            _logger = logger;
+            _weatherForecastService = weatherForecastService;
         }
 
+        // GET /WeatherForecast nuk merr parametra dhe kthen pese parashikime shembull, pa databaze.
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+            return _weatherForecastService.GetForecasts();
         }
     }
 }

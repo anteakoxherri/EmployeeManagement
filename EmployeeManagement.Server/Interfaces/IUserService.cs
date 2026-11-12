@@ -14,5 +14,11 @@ namespace EmployeeManagement.Server.Interfaces
 
         // Merr te dhenat e krijimit; kthen perdoruesin e sigurt ose arsyet pse krijimi deshtoi.
         Task<CreateUserResult> CreateUserAsync(CreateUserDto request);
+
+        // Ndryshon profilin/rolin dhe kthen vetem te dhenat e sigurta te perdoruesit.
+        Task<UserMutationResult> UpdateUserAsync(string id, UpdateUserDto request);
+
+        // ID-ja e administratorit merret nga JWT, qe klienti te mos anashkaloje ndalimin e vetefshirjes.
+        Task<UserMutationResult> DeleteUserAsync(string id, string currentUserId);
     }
 }

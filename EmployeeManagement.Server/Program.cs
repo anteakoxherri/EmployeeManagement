@@ -30,6 +30,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 // Scoped krijon nje instance per kerkese HTTP; sherbimet ne ate kerkese ndajne te njejtin DbContext.
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IWeatherForecastService, WeatherForecastService>();
 

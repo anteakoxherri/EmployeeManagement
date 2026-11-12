@@ -5,6 +5,7 @@ using EmployeeManagement.Server.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace EmployeeManagement.Server.Services
 {
@@ -98,6 +99,146 @@ namespace EmployeeManagement.Server.Services
                 // UserName eshte email-i; indeksi unik i Identity ndalon dy regjistrime me te njejtin email.
                 return new CreateUserResult { DuplicateEmail = true };
             }
+        }
+
+        // Ndryshon profilin dhe rolin ne nje transaksion: deshtimi i Identity anulon te gjitha shkrimet.
+        public async Task<UserMutationResult> UpdateUserAsync(string id, UpdateUserDto request)
+        {
+            if (request.Role != "Employee" && request.Role != "Administrator")
+                return MutationFailure(UserMutationStatus.Invalid, "Role must be Employee or Administrator.");
+
+            try
+            {
+                // Serializable mbron kontrollin e administratorit te fundit nga kerkesa te njekohshme.
+                await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+                var user = await _userManager.FindByIdAsync(id);
+                if (user == null)
+                    return MutationFailure(UserMutationStatus.NotFound);
+
+                var email = request.Email.Trim();
+                var existingUser = await _userManager.FindByEmailAsync(email);
+                if (existingUser != null && existingUser.Id != id)
+                    return MutationFailure(UserMutationStatus.Conflict, "A user with this email already exists.");
+
+                if (!await _context.Roles.AnyAsync(role => role.NormalizedName == request.Role.ToUpperInvariant()))
+                    return MutationFailure(UserMutationStatus.Invalid, "The selected role does not exist.");
+
+                var roles = await _userManager.GetRolesAsync(user);
+                if (roles.Contains("Administrator") && request.Role != "Administrator" &&
+                    await CountAdministratorsAsync() <= 1)
+                    return MutationFailure(UserMutationStatus.Conflict, "The last Administrator cannot be demoted.");
+
+                user.FirstName = request.FirstName;
+                user.LastName = request.LastName;
+                // UserName mbetet email-i, si te krijimi; UpdateAsync normalizon te dyja fushat.
+                if (!string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase))
+                    user.EmailConfirmed = false;
+                user.Email = email;
+                user.UserName = email;
+
+                var update = await _userManager.UpdateAsync(user);
+                if (!update.Succeeded)
+                    return IdentityFailure(update);
+
+                var rolesToRemove = roles.Where(role => role != request.Role).ToArray();
+                if (rolesToRemove.Length > 0)
+                {
+                    var removal = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+                    if (!removal.Succeeded)
+                        return IdentityFailure(removal);
+                }
+                if (!roles.Contains(request.Role))
+                {
+                    var assignment = await _userManager.AddToRoleAsync(user, request.Role);
+                    if (!assignment.Succeeded)
+                        return IdentityFailure(assignment);
+                }
+
+                var updatedUser = await GetUserByIdAsync(id);
+                await transaction.CommitAsync();
+                return new UserMutationResult { User = updatedUser };
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return MutationFailure(UserMutationStatus.Conflict, "The user changed. Reload and try again.");
+            }
+            catch (DbUpdateException exception) when (exception.InnerException is SqlException { Number: 2601 or 2627 })
+            {
+                return MutationFailure(UserMutationStatus.Conflict, "A user with this email already exists.");
+            }
+            catch (Exception exception) when (IsRelationshipOrDeadlockConflict(exception))
+            {
+                return MutationFailure(UserMutationStatus.Conflict, "Related data changed. Reload and try again.");
+            }
+        }
+
+        // Fshin vetem perdoruesin; projektet dhe historiku i detyrave nuk fshihen.
+        public async Task<UserMutationResult> DeleteUserAsync(string id, string currentUserId)
+        {
+            try
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+                var user = await _userManager.FindByIdAsync(id);
+                if (user == null)
+                    return MutationFailure(UserMutationStatus.NotFound);
+
+                if (id == currentUserId)
+                    return MutationFailure(UserMutationStatus.Invalid, "You cannot delete your own account.");
+
+                if (await _userManager.IsInRoleAsync(user, "Administrator") && await CountAdministratorsAsync() <= 1)
+                    return MutationFailure(UserMutationStatus.Conflict, "The last Administrator cannot be deleted.");
+
+                // CreatedBy ka Restrict: ndalojme fshirjen per te ruajtur autorin e historikut.
+                if (await _context.EmployeeTasks.AnyAsync(task => task.CreatedByUserId == id))
+                    return MutationFailure(UserMutationStatus.Conflict, "This user has created tasks and must be retained for task history.");
+
+                // FK-te ekzistuese ne SQL heqin vetem anetaresimet (Cascade) dhe vendosin
+                // AssignedToUserId = null (SetNull). Projektet, detyrat dhe datat e tyre ruhen.
+                var deletion = await _userManager.DeleteAsync(user);
+                if (!deletion.Succeeded)
+                    return IdentityFailure(deletion);
+
+                await transaction.CommitAsync();
+                return new UserMutationResult();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return MutationFailure(UserMutationStatus.Conflict, "The user changed. Reload and try again.");
+            }
+            catch (Exception exception) when (IsRelationshipOrDeadlockConflict(exception))
+            {
+                return MutationFailure(UserMutationStatus.Conflict, "Related data prevents deletion or changed. Reload and try again.");
+            }
+        }
+
+        // Ky query ndan te njejtin transaksion me ndryshimin/fshirjen e roleve.
+        private Task<int> CountAdministratorsAsync()
+        {
+            return (from membership in _context.UserRoles
+                    join role in _context.Roles on membership.RoleId equals role.Id
+                    where role.NormalizedName == "ADMINISTRATOR"
+                    select membership.UserId).CountAsync();
+        }
+
+        private static UserMutationResult MutationFailure(UserMutationStatus status, params string[] errors)
+            => new() { Status = status, Errors = errors };
+
+        // Gabimet e validimit japin 400; dublikatat dhe konflikti optimist japin 409.
+        private static UserMutationResult IdentityFailure(IdentityResult result)
+            => MutationFailure(result.Errors.Any(error => error.Code is "DuplicateEmail" or "DuplicateUserName" or "ConcurrencyFailure")
+                ? UserMutationStatus.Conflict : UserMutationStatus.Invalid,
+                result.Errors.Select(error => error.Description).ToArray());
+
+        // Nje FK ose deadlock nga nje kerkese konkurrente kthehet si konflikt pa zbuluar SQL-ne.
+        private static bool IsRelationshipOrDeadlockConflict(Exception exception)
+        {
+            // EF mund ta mbeshtjelle SqlException me DbUpdateException dhe InvalidOperationException.
+            for (Exception? cause = exception; cause != null; cause = cause.InnerException)
+            {
+                if (cause is SqlException { Number: 547 or 1205 })
+                    return true;
+            }
+            return false;
         }
 
         // Nderton nje query te riperdorshme; SQL ekzekutohet vetem kur thirret ToListAsync/SingleOrDefaultAsync.

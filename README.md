@@ -89,3 +89,21 @@ npm.cmd run dev
 4. Test `GET /api/users` and use a returned ID with `GET /api/users/{id}`. Expect `200`; a nonexistent ID returns `404`.
 5. To create a user, execute `POST /api/users` with `firstName`, `lastName`, a unique `email`, a password meeting the requirements above, and `role` set to `Employee` or `Administrator`. Expect `201`, `400` for invalid input, or `409` for a duplicate email.
 6. `GET /api/employees` returns only Employee-role users; an empty array is valid. These user-management endpoints require an Administrator JWT: no token returns `401`, and an Employee-only token returns `403`.
+
+## Administrator: update and delete users
+
+`PUT /api/users/{id}` requires all four fields below. It returns `200` with the safe `UserDto`, `400` for invalid input, `404` for an unknown ID, or `409` for a duplicate email or conflicting change. Email and UserName remain synchronized. Passwords are unchanged.
+
+```json
+{
+  "firstName": "Updated",
+  "lastName": "User",
+  "email": "updated@example.com",
+  "role": "Employee"
+}
+```
+
+`DELETE /api/users/{id}` returns `204` on success, `404` for an unknown ID, `400` for deleting your own account, or `409` when deleting the last Administrator or a user who has created tasks. Membership records are removed and assigned tasks become unassigned; projects, tasks, completion dates and task authorship are preserved. PUT also prevents demoting the last Administrator. Both operations use transactions, including protection against concurrent changes to the last Administrator.
+
+In Swagger, log in and authorize with an Administrator token. Create a disposable Employee through POST, update it with PUT, check it with GET, and delete it with DELETE. Try an invalid email (`400`), another user's email (`409`), an unknown ID (`404`) and your own ID for DELETE (`400`). Repeat PUT/DELETE with an Employee token (`403`) and after logout in Swagger (`401`). To check a changed role, log in again: existing JWTs retain their claims until expiration under the existing authentication configuration.
+

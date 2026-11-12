@@ -2,6 +2,7 @@ using EmployeeManagement.Server.DTOs;
 using EmployeeManagement.Server.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EmployeeManagement.Server.Controllers
 {
@@ -51,6 +52,48 @@ namespace EmployeeManagement.Server.Controllers
             // 201 tregon krijimin; Location tregon URL-ne e GET qe lexon perdoruesin e ri.
             // Kthejme UserDto, kurre CreateUserDto qe permban password-in.
             return CreatedAtAction(nameof(GetUserById), new { id = result.User.Id }, result.User);
+        }
+
+        // PUT ndryshon profilin dhe rolin; [Authorize] i klases lejon vetem Administratorin.
+        // [ApiController] kontrollon annotations; ne sukses kthejme UserDto pa te dhena sensitive.
+        [HttpPut("{id}")]
+        [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<UserDto>> UpdateUser(string id, UpdateUserDto request)
+        {
+            var result = await _userService.UpdateUserAsync(id, request);
+            return result.Status switch
+            {
+                UserMutationStatus.NotFound => NotFound(),
+                UserMutationStatus.Invalid => BadRequest(new { errors = result.Errors }),
+                UserMutationStatus.Conflict => Conflict(new { errors = result.Errors }),
+                _ => Ok(result.User)
+            };
+        }
+
+        // DELETE merr identitetin nga token-i i verifikuar, jo nga body ose query string.
+        // Service kontrollon vetefshirjen, administratorin e fundit dhe lidhjet para fshirjes.
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(currentUserId))
+                return Unauthorized();
+
+            var result = await _userService.DeleteUserAsync(id, currentUserId);
+            return result.Status switch
+            {
+                UserMutationStatus.NotFound => NotFound(),
+                UserMutationStatus.Invalid => BadRequest(new { errors = result.Errors }),
+                UserMutationStatus.Conflict => Conflict(new { errors = result.Errors }),
+                _ => NoContent()
+            };
         }
 
         // Merr id nga URL-ja (string sepse Identity perdor string per ID) dhe kthen UserDto ose 404.

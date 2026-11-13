@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.StaticFiles;
+using EmployeeManagement.Server.Middleware;
+using EmployeeManagement.Server.Configuration;
 
 // Pika e nisjes se API-se: builder mbledh konfigurimin dhe regjistron varesite ne DI.
 // Konfigurimi mund te vije nga appsettings, User Secrets ne Development dhe variablat e ambientit.
@@ -33,7 +37,16 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IWeatherForecastService, WeatherForecastService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+
+builder.Services.AddOptions<RabbitMqOptions>()
+    .Bind(builder.Configuration.GetSection(RabbitMqOptions.SectionName))
+    .ValidateDataAnnotations().ValidateOnStart();
+// I njejti singleton sherben per pranimin e eventeve dhe publikimin ne background.
+builder.Services.AddSingleton<RabbitMqPublisher>();
+builder.Services.AddSingleton<IRabbitMqPublisher>(services => services.GetRequiredService<RabbitMqPublisher>());
+builder.Services.AddHostedService<RabbitMqPublisher>(services => services.GetRequiredService<RabbitMqPublisher>());
+builder.Services.AddHostedService<RabbitMqConsumer>();
 
 // Issuer tregon kush e leshon token-in, Audience tregon per ke vlen, Key eshte sekreti i nenshkrimit.
 // Key nuk duhet publikuar ose vendosur ne repository; merret nga konfigurimi i sigurt.
@@ -145,6 +158,9 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedAsync(services, configuration);
 }
 
+// Vendoset para Swagger dhe middleware-ve te tjere qe te kape gabimet e kerkesave HTTP.
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 // Aktivizimi i Swagger ne Development
 if (app.Environment.IsDevelopment())
 {
@@ -155,6 +171,21 @@ if (app.Environment.IsDevelopment())
 // Middleware jane hapa qe perpunojne kerkesen me radhe perpara se ajo te arrije te controller-i.
 // HTTPS redirection e drejton klientin drejt lidhjes HTTPS kur ajo eshte konfiguruar.
 app.UseHttpsRedirection();
+
+// Publikojme vetem dosjen e fotografive, pa listim dhe pa ekspozuar skedare te tjere te serverit.
+var profilePicturesDirectory = ProfileService.GetUploadDirectory(app.Environment.ContentRootPath);
+Directory.CreateDirectory(profilePicturesDirectory);
+var pictureContentTypes = new FileExtensionContentTypeProvider();
+pictureContentTypes.Mappings.Clear();
+pictureContentTypes.Mappings[".jpg"] = "image/jpeg";
+pictureContentTypes.Mappings[".png"] = "image/png";
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(profilePicturesDirectory),
+    RequestPath = ProfileService.PictureUrlPrefix.TrimEnd('/'),
+    ContentTypeProvider = pictureContentTypes,
+    OnPrepareResponse = context => context.Context.Response.Headers["X-Content-Type-Options"] = "nosniff"
+});
 
 // Rendi ka rendesi: fillimisht lexohet/verifikohet JWT dhe ndertohet HttpContext.User.
 app.UseAuthentication();

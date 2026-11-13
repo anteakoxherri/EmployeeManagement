@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using EmployeeManagement.Server.Events;
 
 namespace EmployeeManagement.Server.Services
 {
@@ -15,14 +16,17 @@ namespace EmployeeManagement.Server.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
+        private readonly IRabbitMqPublisher _publisher;
 
         // DI jep te njejtin DbContext te scope-it edhe te Identity, qe shkrimet te ndajne transaksionin.
         public UserService(
             UserManager<ApplicationUser> userManager,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IRabbitMqPublisher publisher)
         {
             _userManager = userManager;
             _context = context;
+            _publisher = publisher;
         }
 
         // Pa parametra; ToListAsync ekzekuton SQL-ne dhe kthen te gjithe perdoruesit si DTO te sigurta.
@@ -89,7 +93,8 @@ namespace EmployeeManagement.Server.Services
                 // Riperdorim leximin ekzistues qe pergjigjja te permbaje vetem fushat e UserDto.
                 var createdUser = await GetUserByIdAsync(user.Id);
                 await transaction.CommitAsync();
-
+                // Publikimi pranohet ne background vetem pasi databaza konfirmon transaksionin.
+                _publisher.Publish(new(BusinessEventType.UserCreated, user.Id, UserId: user.Id));
                 return new CreateUserResult { User = createdUser };
             }
             catch (DbUpdateException exception) when (
@@ -156,6 +161,7 @@ namespace EmployeeManagement.Server.Services
 
                 var updatedUser = await GetUserByIdAsync(id);
                 await transaction.CommitAsync();
+                _publisher.Publish(new(BusinessEventType.UserUpdated, id, UserId: id));
                 return new UserMutationResult { User = updatedUser };
             }
             catch (DbUpdateConcurrencyException)
@@ -199,6 +205,7 @@ namespace EmployeeManagement.Server.Services
                     return IdentityFailure(deletion);
 
                 await transaction.CommitAsync();
+                _publisher.Publish(new(BusinessEventType.UserDeleted, id, UserId: id));
                 return new UserMutationResult();
             }
             catch (DbUpdateConcurrencyException)

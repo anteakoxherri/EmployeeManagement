@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using EmployeeManagement.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using EmployeeManagement.Server.Events;
 
 namespace EmployeeManagement.Server.Services
 {
@@ -12,10 +13,12 @@ namespace EmployeeManagement.Server.Services
     public class ProjectService : IProjectService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IRabbitMqPublisher _publisher;
 
-        public ProjectService(ApplicationDbContext context)
+        public ProjectService(ApplicationDbContext context, IRabbitMqPublisher publisher)
         {
             _context = context;
+            _publisher = publisher;
         }
 
         // Administratori lexon te gjitha projektet; Employee merr vetem anetaresimet e veta.
@@ -36,17 +39,18 @@ namespace EmployeeManagement.Server.Services
 
         // Krijon projektin nga fushat e lejuara, pa pranuar navigime ose ID nga klienti.
         public Task<ProjectOperationResult> CreateProjectAsync(ProjectRequestDto request)
-            => ExecuteChangeAsync(async () =>
+            => ExecuteChangeAsync(async events =>
             {
                 var project = new Project { Name = request.Name, Description = request.Description };
                 _context.Projects.Add(project);
                 await _context.SaveChangesAsync();
+                events.Add(new(BusinessEventType.ProjectCreated, project.Id.ToString(), ProjectId: project.Id));
                 return new ProjectOperationResult { Project = ToDto(project) };
             });
 
         // PUT ruan ID-ne/daten e krijimit dhe ndryshon vetem emrin e pershkrimin.
         public Task<ProjectOperationResult> UpdateProjectAsync(int id, ProjectRequestDto request)
-            => ExecuteChangeAsync(async () =>
+            => ExecuteChangeAsync(async events =>
             {
                 var project = await _context.Projects.SingleOrDefaultAsync(project => project.Id == id);
                 if (project == null)
@@ -55,12 +59,13 @@ namespace EmployeeManagement.Server.Services
                 project.Name = request.Name;
                 project.Description = request.Description;
                 await _context.SaveChangesAsync();
+                events.Add(new(BusinessEventType.ProjectUpdated, project.Id.ToString(), ProjectId: project.Id));
                 return new ProjectOperationResult { Project = ToDto(project) };
             });
 
         // Nuk lejohet fshirja nese ekziston qofte edhe nje detyre e paperfunduar.
         public Task<ProjectOperationResult> DeleteProjectAsync(int id)
-            => ExecuteChangeAsync(async () =>
+            => ExecuteChangeAsync(async events =>
             {
                 var project = await _context.Projects.SingleOrDefaultAsync(project => project.Id == id);
                 if (project == null)
@@ -74,12 +79,14 @@ namespace EmployeeManagement.Server.Services
                 _context.Projects.Remove(project);
                 // Cascade ekzistues heq anetaresimet e ketij projekti, por nuk fshin perdoruesit.
                 await _context.SaveChangesAsync();
+                // Ky event pershkruan fshirjen e projektit, perfshire pastrimin ekzistues te lidhjeve.
+                events.Add(new(BusinessEventType.ProjectDeleted, id.ToString(), ProjectId: id));
                 return new ProjectOperationResult();
             });
 
         // Shton vetem nje perdorues ekzistues qe ka rolin Employee, pa ndryshuar rolet e tij.
         public Task<ProjectOperationResult> AddEmployeeAsync(int projectId, string userId)
-            => ExecuteChangeAsync(async () =>
+            => ExecuteChangeAsync(async events =>
             {
                 if (!await _context.Projects.AnyAsync(project => project.Id == projectId))
                     return Failure(ProjectOperationStatus.NotFound, "Project not found.");
@@ -97,12 +104,13 @@ namespace EmployeeManagement.Server.Services
 
                 _context.ProjectEmployees.Add(new ProjectEmployee { ProjectId = projectId, UserId = userId });
                 await _context.SaveChangesAsync();
+                events.Add(new(BusinessEventType.EmployeeAddedToProject, projectId.ToString(), ProjectId: projectId, UserId: userId));
                 return new ProjectOperationResult();
             });
 
         // Heqja bllokohet kur ka detyra te caktuara, duke ruajtur caktimet dhe historikun.
         public Task<ProjectOperationResult> RemoveEmployeeAsync(int projectId, string userId)
-            => ExecuteChangeAsync(async () =>
+            => ExecuteChangeAsync(async events =>
             {
                 if (!await _context.Projects.AnyAsync(project => project.Id == projectId))
                     return Failure(ProjectOperationStatus.NotFound, "Project not found.");
@@ -114,6 +122,7 @@ namespace EmployeeManagement.Server.Services
 
                 _context.ProjectEmployees.Remove(membership);
                 await _context.SaveChangesAsync();
+                events.Add(new(BusinessEventType.EmployeeRemovedFromProject, projectId.ToString(), ProjectId: projectId, UserId: userId));
                 return new ProjectOperationResult();
             });
 
@@ -138,14 +147,19 @@ namespace EmployeeManagement.Server.Services
 
         // Transaksioni Serializable mbron kontrollet nga detyra/anetaresime qe ndryshojne njekohesisht.
         // Vetem rezultati Success kryen Commit; ne raste te tjera Dispose anulon shkrimet.
-        private async Task<ProjectOperationResult> ExecuteChangeAsync(Func<Task<ProjectOperationResult>> change)
+        private async Task<ProjectOperationResult> ExecuteChangeAsync(Func<List<BusinessEvent>, Task<ProjectOperationResult>> change)
         {
             try
             {
                 await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-                var result = await change();
+                var events = new List<BusinessEvent>();
+                var result = await change(events);
                 if (result.Status == ProjectOperationStatus.Success)
+                {
                     await transaction.CommitAsync();
+                    // SaveChanges nuk mjafton: vetem Commit konfirmon qe ndryshimet mbeten ne DB.
+                    foreach (var businessEvent in events) _publisher.Publish(businessEvent);
+                }
                 return result;
             }
             catch (DbUpdateConcurrencyException)

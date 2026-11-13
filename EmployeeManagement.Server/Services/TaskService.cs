@@ -5,6 +5,7 @@ using EmployeeManagement.Server.DTOs;
 using EmployeeManagement.Server.Interfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using EmployeeManagement.Server.Events;
 
 namespace EmployeeManagement.Server.Services
 {
@@ -12,10 +13,12 @@ namespace EmployeeManagement.Server.Services
     public class TaskService : ITaskService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IRabbitMqPublisher _publisher;
 
-        public TaskService(ApplicationDbContext context)
+        public TaskService(ApplicationDbContext context, IRabbitMqPublisher publisher)
         {
             _context = context;
+            _publisher = publisher;
         }
 
         // Administratori sheh gjithcka; Employee sheh cdo detyre te projekteve ku eshte anetar.
@@ -27,7 +30,7 @@ namespace EmployeeManagement.Server.Services
             => QueryTaskDtos(userId, isAdministrator).SingleOrDefaultAsync(task => task.Id == id);
 
         public Task<TaskOperationResult> CreateTaskAsync(CreateTaskDto request, string userId, bool isAdministrator)
-            => ExecuteChangeAsync(async () =>
+            => ExecuteChangeAsync(async events =>
             {
                 var validation = await ValidateProjectAndAssigneeAsync(request, userId, isAdministrator);
                 if (validation != null)
@@ -47,11 +50,14 @@ namespace EmployeeManagement.Server.Services
                 };
                 _context.EmployeeTasks.Add(task);
                 await _context.SaveChangesAsync();
+                events.Add(TaskEvent(BusinessEventType.TaskCreated, task));
+                if (task.AssignedToUserId != null)
+                    events.Add(TaskEvent(BusinessEventType.TaskAssigned, task));
                 return new TaskOperationResult { Task = ToDto(task) };
             });
 
         public Task<TaskOperationResult> UpdateTaskAsync(int id, UpdateTaskDto request, string userId, bool isAdministrator)
-            => ExecuteChangeAsync(async () =>
+            => ExecuteChangeAsync(async events =>
             {
                 var task = await AccessibleTasks(userId, isAdministrator).SingleOrDefaultAsync(task => task.Id == id);
                 if (task == null)
@@ -66,6 +72,8 @@ namespace EmployeeManagement.Server.Services
                 if (validation != null)
                     return validation;
 
+                var previousAssignee = task.AssignedToUserId;
+                var wasCompleted = task.IsCompleted;
                 task.Title = request.Title;
                 task.Description = request.Description;
                 task.ProjectId = request.ProjectId;
@@ -74,12 +82,17 @@ namespace EmployeeManagement.Server.Services
                     SetCompletion(task, request.IsCompleted.Value);
                 // CreatedAt dhe CreatedByUserId ruhen edhe kur ndryshon projekti ose caktimi.
                 await _context.SaveChangesAsync();
+                events.Add(TaskEvent(BusinessEventType.TaskUpdated, task));
+                if (task.AssignedToUserId != null && task.AssignedToUserId != previousAssignee)
+                    events.Add(TaskEvent(BusinessEventType.TaskAssigned, task));
+                if (!wasCompleted && task.IsCompleted)
+                    events.Add(TaskEvent(BusinessEventType.TaskCompleted, task));
                 return new TaskOperationResult { Task = ToDto(task) };
             });
 
         // Perfundohet cdo detyre nga Administratori, ose vetem detyra e vet nga Employee.
         public Task<TaskOperationResult> CompleteTaskAsync(int id, string userId, bool isAdministrator)
-            => ExecuteChangeAsync(async () =>
+            => ExecuteChangeAsync(async events =>
             {
                 var task = await AccessibleTasks(userId, isAdministrator).SingleOrDefaultAsync(task => task.Id == id);
                 if (task == null)
@@ -87,20 +100,24 @@ namespace EmployeeManagement.Server.Services
                 if (!isAdministrator && task.AssignedToUserId != userId)
                     return Failure(TaskOperationStatus.Forbidden, "Employees can only complete tasks assigned to them.");
 
+                var wasCompleted = task.IsCompleted;
                 SetCompletion(task, true);
                 await _context.SaveChangesAsync();
+                // PATCH i perseritur nuk krijon nje perfundim te ri kur detyra eshte tashme e perfunduar.
+                if (!wasCompleted) events.Add(TaskEvent(BusinessEventType.TaskCompleted, task));
                 return new TaskOperationResult { Task = ToDto(task) };
             });
 
         // Vetem endpoint-i Administrator e therrret kete veprim; hiqet vetem detyra e zgjedhur.
         public Task<TaskOperationResult> DeleteTaskAsync(int id)
-            => ExecuteChangeAsync(async () =>
+            => ExecuteChangeAsync(async events =>
             {
                 var task = await _context.EmployeeTasks.SingleOrDefaultAsync(task => task.Id == id);
                 if (task == null)
                     return Failure(TaskOperationStatus.NotFound, "Task not found.");
                 _context.EmployeeTasks.Remove(task);
                 await _context.SaveChangesAsync();
+                events.Add(TaskEvent(BusinessEventType.TaskDeleted, task));
                 return new TaskOperationResult();
             });
 
@@ -151,14 +168,19 @@ namespace EmployeeManagement.Server.Services
 
         // Transaksioni ruan vlefshmerine e anetaresimit/caktimit gjate shkrimit dhe mbron
         // kontrollin ekzistues te fshirjes se projektit nga krijimi/rihapja e detyrave njekohesisht.
-        private async Task<TaskOperationResult> ExecuteChangeAsync(Func<Task<TaskOperationResult>> change)
+        private async Task<TaskOperationResult> ExecuteChangeAsync(Func<List<BusinessEvent>, Task<TaskOperationResult>> change)
         {
             try
             {
                 await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-                var result = await change();
+                var events = new List<BusinessEvent>();
+                var result = await change(events);
                 if (result.Status == TaskOperationStatus.Success)
+                {
                     await transaction.CommitAsync();
+                    // Eventet e veprimeve te refuzuara ose transaksioneve te anuluara nuk dergohen.
+                    foreach (var businessEvent in events) _publisher.Publish(businessEvent);
+                }
                 return result;
             }
             catch (DbUpdateConcurrencyException)
@@ -182,6 +204,10 @@ namespace EmployeeManagement.Server.Services
 
         private static TaskOperationResult Failure(TaskOperationStatus status, string error)
             => new() { Status = status, Error = error };
+
+        private static BusinessEvent TaskEvent(BusinessEventType type, EmployeeTask task)
+            => new(type, task.Id.ToString(), ProjectId: task.ProjectId, TaskId: task.Id,
+                UserId: task.CreatedByUserId, AssignedToUserId: task.AssignedToUserId);
 
         private static TaskDto ToDto(EmployeeTask task)
             => new()

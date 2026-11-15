@@ -37,5 +37,7 @@ export async function apiRequest(path, { token, onUnauthorized, ...options } = {
     throw new Error(message)
   }
   if (response.status === 204) return null
-  return response.json()
+  // Shtimi i anetarit kthen 201 pa body; nuk provojme ta lexojme si JSON bosh.
+  const body = await response.text()
+  return body.trim() ? JSON.parse(body) : null
 }

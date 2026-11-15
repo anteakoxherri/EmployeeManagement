@@ -5,6 +5,8 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Placeholder from './pages/Placeholder'
 import Profile from './pages/Profile'
+import Users from './pages/Users'
+import Projects from './pages/Projects'
 import Layout from './components/Layout'
 import './App.css'
 
@@ -31,7 +33,7 @@ function Router() {
   if (!session) return <Login message={message} />
   const title = destination === dashboard ? 'Dashboard' : destination.slice(1).replace(/^./, (letter) => letter.toUpperCase())
   return <Layout dashboard={dashboard} path={destination} title={title}>
-    {destination === dashboard ? <Dashboard /> : destination === '/profile' ? <Profile /> : <Placeholder title={title} />}
+    {destination === dashboard ? <Dashboard /> : destination === '/profile' ? <Profile /> : destination === '/users' ? <Users /> : destination === '/projects' ? <Projects /> : <Placeholder title={title} />}
   </Layout>
 }
 

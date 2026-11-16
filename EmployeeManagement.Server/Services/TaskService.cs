@@ -68,6 +68,13 @@ namespace EmployeeManagement.Server.Services
                 if (!isAdministrator && task.AssignedToUserId != userId)
                     return Failure(TaskOperationStatus.Forbidden, "Employees can only modify tasks assigned to them.");
 
+                // Caktimi dhe projekti i nje detyre ekzistuese ndryshohen vetem nga Administratori.
+                if (!isAdministrator && (request.ProjectId != task.ProjectId || request.AssignedToUserId != task.AssignedToUserId))
+                    return Failure(TaskOperationStatus.Forbidden, "Employees cannot change an existing task's project or assigned employee.");
+
+                if (!isAdministrator && task.IsCompleted && request.IsCompleted == false)
+                    return Failure(TaskOperationStatus.Forbidden, "Employees cannot reopen completed tasks.");
+
                 var validation = await ValidateProjectAndAssigneeAsync(request, userId, isAdministrator);
                 if (validation != null)
                     return validation;

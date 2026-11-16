@@ -102,7 +102,7 @@ a.dashboard-metric:hover { border-color: #b9cce9; box-shadow: 0 5px 16px #142844
 .metric-top svg { color: #819bc2; }
 .metric-value { color: #273e5d; font-size: 1.8rem; line-height: 1.3; font-weight: 600; letter-spacing: -.7px; margin: 12px 0 6px; }
 .metric-detail { color: #8291a5; font-size: .6875rem; }
-.dashboard-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; }
+.dashboard-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: stretch; }
 .dashboard-panel { min-width: 0; border: 1px solid #e4eaf3; border-radius: 13px; background: white; overflow: hidden; box-shadow: 0 3px 10px #14284403; }
 .dashboard-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 20px 23px; border-bottom: 1px solid var(--border); color: #90a1b9; }
 .dashboard-panel-heading h2 { font-size: .95rem; color: #314966; font-weight: 600; }
@@ -235,7 +235,7 @@ a.dashboard-metric:hover { border-color: #b9cce9; box-shadow: 0 5px 16px #142844
 }
 
 /* Formulari dhe fotografia ruajne gjendje te ndara per ruajtjen. */
-.profile-grid { display: grid; grid-template-columns: minmax(250px, .8fr) minmax(0, 1.6fr); gap: 22px; align-items: start; }
+.profile-grid { display: grid; grid-template-columns: minmax(250px, .8fr) minmax(0, 1.6fr); gap: 22px; align-items: stretch; }
 .profile-panel { background: white; border: 1px solid #e4eaf3; border-radius: 14px; padding: 28px; box-shadow: 0 3px 10px #14284404; }
 .profile-panel > h2 { font-size: 1.0625rem; margin-bottom: 7px; }
 .profile-panel > .muted { font-size: .8125rem; line-height: 1.8; }

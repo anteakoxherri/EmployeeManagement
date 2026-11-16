@@ -7,11 +7,80 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Server",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EmployeeManagement.Client", "EmployeeManagement.Client", "{FE036C90-F1F1-4A62-B6C7-C39EEB787FE8}"
 	ProjectSection(SolutionItems) = preProject
+		EmployeeManagement.Client\.gitignore = EmployeeManagement.Client\.gitignore
+		EmployeeManagement.Client\eslint.config.js = EmployeeManagement.Client\eslint.config.js
+		EmployeeManagement.Client\index.html = EmployeeManagement.Client\index.html
+		EmployeeManagement.Client\package-lock.json = EmployeeManagement.Client\package-lock.json
 		EmployeeManagement.Client\package.json = EmployeeManagement.Client\package.json
 		EmployeeManagement.Client\vite.config.js = EmployeeManagement.Client\vite.config.js
-		EmployeeManagement.Client\index.html = EmployeeManagement.Client\index.html
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "public", "public", "{5B13D878-DF59-209E-6228-E97353B2FB2F}"
+	ProjectSection(SolutionItems) = preProject
+		EmployeeManagement.Client\public\favicon.svg = EmployeeManagement.Client\public\favicon.svg
+		EmployeeManagement.Client\public\icons.svg = EmployeeManagement.Client\public\icons.svg
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FE2EFD5D-B5C3-3264-3A87-63538B074832}"
+	ProjectSection(SolutionItems) = preProject
+		EmployeeManagement.Client\src\App.css = EmployeeManagement.Client\src\App.css
 		EmployeeManagement.Client\src\App.jsx = EmployeeManagement.Client\src\App.jsx
+		EmployeeManagement.Client\src\index.css = EmployeeManagement.Client\src\index.css
 		EmployeeManagement.Client\src\main.jsx = EmployeeManagement.Client\src\main.jsx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{42C92996-20BC-0EFC-4B77-6DE12866DFB5}"
+	ProjectSection(SolutionItems) = preProject
+		EmployeeManagement.Client\src\api\client.js = EmployeeManagement.Client\src\api\client.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{79FE568B-66FC-5EAF-BE3D-51AE8A8EFB7B}"
+	ProjectSection(SolutionItems) = preProject
+		EmployeeManagement.Client\src\assets\hero.png = EmployeeManagement.Client\src\assets\hero.png
+		EmployeeManagement.Client\src\assets\react.svg = EmployeeManagement.Client\src\assets\react.svg
+		EmployeeManagement.Client\src\assets\vite.svg = EmployeeManagement.Client\src\assets\vite.svg
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "auth", "auth", "{B027FEAC-D1FC-6534-A18E-5FE50FA57E21}"
+	ProjectSection(SolutionItems) = preProject
+		EmployeeManagement.Client\src\auth\AuthProvider.jsx = EmployeeManagement.Client\src\auth\AuthProvider.jsx
+		EmployeeManagement.Client\src\auth\session.js = EmployeeManagement.Client\src\auth\session.js
+		EmployeeManagement.Client\src\auth\useAuth.js = EmployeeManagement.Client\src\auth\useAuth.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "components", "components", "{548B6353-71CC-1B28-20F0-0081EA1D7896}"
+	ProjectSection(SolutionItems) = preProject
+		EmployeeManagement.Client\src\components\Brand.jsx = EmployeeManagement.Client\src\components\Brand.jsx
+		EmployeeManagement.Client\src\components\ICONS-LICENSE.txt = EmployeeManagement.Client\src\components\ICONS-LICENSE.txt
+		EmployeeManagement.Client\src\components\Icon.jsx = EmployeeManagement.Client\src\components\Icon.jsx
+		EmployeeManagement.Client\src\components\Layout.jsx = EmployeeManagement.Client\src\components\Layout.jsx
+		EmployeeManagement.Client\src\components\ManagementUI.jsx = EmployeeManagement.Client\src\components\ManagementUI.jsx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "hooks", "hooks", "{CD6FC73C-0DF3-0E75-CAB8-58474E8D1E69}"
+	ProjectSection(SolutionItems) = preProject
+		EmployeeManagement.Client\src\hooks\useApiList.js = EmployeeManagement.Client\src\hooks\useApiList.js
+		EmployeeManagement.Client\src\hooks\useTaskMembers.js = EmployeeManagement.Client\src\hooks\useTaskMembers.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pages", "pages", "{24153AD5-C1BB-650B-52BA-76CECD8E534D}"
+	ProjectSection(SolutionItems) = preProject
+		EmployeeManagement.Client\src\pages\Dashboard.jsx = EmployeeManagement.Client\src\pages\Dashboard.jsx
+		EmployeeManagement.Client\src\pages\Login.jsx = EmployeeManagement.Client\src\pages\Login.jsx
+		EmployeeManagement.Client\src\pages\Placeholder.jsx = EmployeeManagement.Client\src\pages\Placeholder.jsx
+		EmployeeManagement.Client\src\pages\Profile.jsx = EmployeeManagement.Client\src\pages\Profile.jsx
+		EmployeeManagement.Client\src\pages\Projects.jsx = EmployeeManagement.Client\src\pages\Projects.jsx
+		EmployeeManagement.Client\src\pages\Tasks.jsx = EmployeeManagement.Client\src\pages\Tasks.jsx
+		EmployeeManagement.Client\src\pages\Tasks.css = EmployeeManagement.Client\src\pages\Tasks.css
+		EmployeeManagement.Client\src\pages\Users.jsx = EmployeeManagement.Client\src\pages\Users.jsx
+		EmployeeManagement.Client\src\pages\managementValidation.js = EmployeeManagement.Client\src\pages\managementValidation.js
+		EmployeeManagement.Client\src\pages\profileValidation.js = EmployeeManagement.Client\src\pages\profileValidation.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{7B883927-1DE9-FD85-76B2-0005F3DBCA2F}"
+	ProjectSection(SolutionItems) = preProject
+		EmployeeManagement.Client\tests\auth.test.js = EmployeeManagement.Client\tests\auth.test.js
+		EmployeeManagement.Client\tests\profile.test.js = EmployeeManagement.Client\tests\profile.test.js
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Models", "EmployeeManagement.Models\EmployeeManagement.Models.csproj", "{C2BB9590-2B0E-4F1D-BBBC-701A003A2C51}"
@@ -72,6 +141,15 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3D1CE57A-0DE9-4CEA-B635-9A33E7726E5E} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{5B13D878-DF59-209E-6228-E97353B2FB2F} = {FE036C90-F1F1-4A62-B6C7-C39EEB787FE8}
+		{FE2EFD5D-B5C3-3264-3A87-63538B074832} = {FE036C90-F1F1-4A62-B6C7-C39EEB787FE8}
+		{42C92996-20BC-0EFC-4B77-6DE12866DFB5} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
+		{79FE568B-66FC-5EAF-BE3D-51AE8A8EFB7B} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
+		{B027FEAC-D1FC-6534-A18E-5FE50FA57E21} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
+		{548B6353-71CC-1B28-20F0-0081EA1D7896} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
+		{CD6FC73C-0DF3-0E75-CAB8-58474E8D1E69} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
+		{24153AD5-C1BB-650B-52BA-76CECD8E534D} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
+		{7B883927-1DE9-FD85-76B2-0005F3DBCA2F} = {FE036C90-F1F1-4A62-B6C7-C39EEB787FE8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6C7779D1-1AAB-4B66-9343-8BC595A57352}

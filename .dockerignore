@@ -1,6 +1,6 @@
 **/.classpath
 **/.dockerignore
-**/.env
+**/.env*
 **/.git
 **/.gitignore
 **/.project
@@ -23,8 +23,14 @@
 **/values.dev.yaml
 LICENSE
 README.md
-!**/.gitignore
-!.git/HEAD
-!.git/config
-!.git/packed-refs
-!.git/refs/heads/**
+**/.agents
+**/.codex
+**/.aws
+**/TestResults
+**/artifacts
+**/uploads
+**/dist
+**/*.pfx
+**/*.p12
+EmployeeManagement.Client
+tests

@@ -7,9 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Server",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EmployeeManagement.Client", "EmployeeManagement.Client", "{FE036C90-F1F1-4A62-B6C7-C39EEB787FE8}"
 	ProjectSection(SolutionItems) = preProject
+		EmployeeManagement.Client\.dockerignore = EmployeeManagement.Client\.dockerignore
 		EmployeeManagement.Client\.gitignore = EmployeeManagement.Client\.gitignore
+		EmployeeManagement.Client\Dockerfile = EmployeeManagement.Client\Dockerfile
 		EmployeeManagement.Client\eslint.config.js = EmployeeManagement.Client\eslint.config.js
 		EmployeeManagement.Client\index.html = EmployeeManagement.Client\index.html
+		EmployeeManagement.Client\nginx.conf = EmployeeManagement.Client\nginx.conf
 		EmployeeManagement.Client\package-lock.json = EmployeeManagement.Client\package-lock.json
 		EmployeeManagement.Client\package.json = EmployeeManagement.Client\package.json
 		EmployeeManagement.Client\vite.config.js = EmployeeManagement.Client\vite.config.js
@@ -89,6 +92,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMqChecks", "tests\RabbitMqChecks\RabbitMqChecks.csproj", "{3D1CE57A-0DE9-4CEA-B635-9A33E7726E5E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.UnitTests", "tests\EmployeeManagement.UnitTests\EmployeeManagement.UnitTests.csproj", "{5762FCA4-740F-441B-B500-4E12045EDA12}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{C78093EA-B644-47F7-B346-EDE884020C79}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.env.example = .env.example
+		artifacts\docker-verification\compose.env = artifacts\docker-verification\compose.env
+		docker-compose.yml = docker-compose.yml
+		docker-compose.rabbitmq.yml = docker-compose.rabbitmq.yml
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,12 +150,23 @@ Global
 		{3D1CE57A-0DE9-4CEA-B635-9A33E7726E5E}.Release|x64.Build.0 = Release|Any CPU
 		{3D1CE57A-0DE9-4CEA-B635-9A33E7726E5E}.Release|x86.ActiveCfg = Release|Any CPU
 		{3D1CE57A-0DE9-4CEA-B635-9A33E7726E5E}.Release|x86.Build.0 = Release|Any CPU
+		{5762FCA4-740F-441B-B500-4E12045EDA12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5762FCA4-740F-441B-B500-4E12045EDA12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5762FCA4-740F-441B-B500-4E12045EDA12}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5762FCA4-740F-441B-B500-4E12045EDA12}.Debug|x64.Build.0 = Debug|Any CPU
+		{5762FCA4-740F-441B-B500-4E12045EDA12}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5762FCA4-740F-441B-B500-4E12045EDA12}.Debug|x86.Build.0 = Debug|Any CPU
+		{5762FCA4-740F-441B-B500-4E12045EDA12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5762FCA4-740F-441B-B500-4E12045EDA12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5762FCA4-740F-441B-B500-4E12045EDA12}.Release|x64.ActiveCfg = Release|Any CPU
+		{5762FCA4-740F-441B-B500-4E12045EDA12}.Release|x64.Build.0 = Release|Any CPU
+		{5762FCA4-740F-441B-B500-4E12045EDA12}.Release|x86.ActiveCfg = Release|Any CPU
+		{5762FCA4-740F-441B-B500-4E12045EDA12}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{3D1CE57A-0DE9-4CEA-B635-9A33E7726E5E} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{5B13D878-DF59-209E-6228-E97353B2FB2F} = {FE036C90-F1F1-4A62-B6C7-C39EEB787FE8}
 		{FE2EFD5D-B5C3-3264-3A87-63538B074832} = {FE036C90-F1F1-4A62-B6C7-C39EEB787FE8}
 		{42C92996-20BC-0EFC-4B77-6DE12866DFB5} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
@@ -150,6 +176,8 @@ Global
 		{CD6FC73C-0DF3-0E75-CAB8-58474E8D1E69} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
 		{24153AD5-C1BB-650B-52BA-76CECD8E534D} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
 		{7B883927-1DE9-FD85-76B2-0005F3DBCA2F} = {FE036C90-F1F1-4A62-B6C7-C39EEB787FE8}
+		{3D1CE57A-0DE9-4CEA-B635-9A33E7726E5E} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{5762FCA4-740F-441B-B500-4E12045EDA12} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6C7779D1-1AAB-4B66-9343-8BC595A57352}

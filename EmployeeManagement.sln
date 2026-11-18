@@ -18,12 +18,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EmployeeManagement.Client",
 		EmployeeManagement.Client\vite.config.js = EmployeeManagement.Client\vite.config.js
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "public", "public", "{5B13D878-DF59-209E-6228-E97353B2FB2F}"
-	ProjectSection(SolutionItems) = preProject
-		EmployeeManagement.Client\public\favicon.svg = EmployeeManagement.Client\public\favicon.svg
-		EmployeeManagement.Client\public\icons.svg = EmployeeManagement.Client\public\icons.svg
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FE2EFD5D-B5C3-3264-3A87-63538B074832}"
 	ProjectSection(SolutionItems) = preProject
 		EmployeeManagement.Client\src\App.css = EmployeeManagement.Client\src\App.css
@@ -35,13 +29,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{42C92996-20BC-0EFC-4B77-6DE12866DFB5}"
 	ProjectSection(SolutionItems) = preProject
 		EmployeeManagement.Client\src\api\client.js = EmployeeManagement.Client\src\api\client.js
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{79FE568B-66FC-5EAF-BE3D-51AE8A8EFB7B}"
-	ProjectSection(SolutionItems) = preProject
-		EmployeeManagement.Client\src\assets\hero.png = EmployeeManagement.Client\src\assets\hero.png
-		EmployeeManagement.Client\src\assets\react.svg = EmployeeManagement.Client\src\assets\react.svg
-		EmployeeManagement.Client\src\assets\vite.svg = EmployeeManagement.Client\src\assets\vite.svg
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "auth", "auth", "{B027FEAC-D1FC-6534-A18E-5FE50FA57E21}"
@@ -70,7 +57,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pages", "pages", "{24153AD5
 	ProjectSection(SolutionItems) = preProject
 		EmployeeManagement.Client\src\pages\Dashboard.jsx = EmployeeManagement.Client\src\pages\Dashboard.jsx
 		EmployeeManagement.Client\src\pages\Login.jsx = EmployeeManagement.Client\src\pages\Login.jsx
-		EmployeeManagement.Client\src\pages\Placeholder.jsx = EmployeeManagement.Client\src\pages\Placeholder.jsx
 		EmployeeManagement.Client\src\pages\Profile.jsx = EmployeeManagement.Client\src\pages\Profile.jsx
 		EmployeeManagement.Client\src\pages\Projects.jsx = EmployeeManagement.Client\src\pages\Projects.jsx
 		EmployeeManagement.Client\src\pages\Tasks.jsx = EmployeeManagement.Client\src\pages\Tasks.jsx
@@ -98,7 +84,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{C78093
 	ProjectSection(SolutionItems) = preProject
 		.dockerignore = .dockerignore
 		.env.example = .env.example
-		artifacts\docker-verification\compose.env = artifacts\docker-verification\compose.env
 		docker-compose.yml = docker-compose.yml
 		docker-compose.rabbitmq.yml = docker-compose.rabbitmq.yml
 		README.md = README.md
@@ -167,10 +152,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{5B13D878-DF59-209E-6228-E97353B2FB2F} = {FE036C90-F1F1-4A62-B6C7-C39EEB787FE8}
 		{FE2EFD5D-B5C3-3264-3A87-63538B074832} = {FE036C90-F1F1-4A62-B6C7-C39EEB787FE8}
 		{42C92996-20BC-0EFC-4B77-6DE12866DFB5} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
-		{79FE568B-66FC-5EAF-BE3D-51AE8A8EFB7B} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
 		{B027FEAC-D1FC-6534-A18E-5FE50FA57E21} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
 		{548B6353-71CC-1B28-20F0-0081EA1D7896} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}
 		{CD6FC73C-0DF3-0E75-CAB8-58474E8D1E69} = {FE2EFD5D-B5C3-3264-3A87-63538B074832}

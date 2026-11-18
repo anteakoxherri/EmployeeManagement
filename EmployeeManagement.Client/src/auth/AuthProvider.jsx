@@ -65,7 +65,7 @@ export function AuthProvider({ children }) {
     setSession(nextSession)
   }
 
-  // Per kerkesat e fazes tjeter perdoret i njejti trajtim i 401.
+  // Kerkesat e autentikuara perdorin te njejtin trajtim te 401.
   const token = session?.token
   const request = useCallback((path, options) => apiRequest(path, {
     ...options, token,

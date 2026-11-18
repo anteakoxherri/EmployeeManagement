@@ -8,6 +8,8 @@
 /tests/ProfileApiChecks/artifacts/
 /tests/RabbitMqChecks/artifacts/
 .env
+.env.*
+!.env.example
 *.rsuser
 *.suo
 *.user

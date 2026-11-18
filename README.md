@@ -99,7 +99,7 @@ Open **http://localhost:5173** and sign in with the Administrator from User Secr
 
 ## Unit tests
 
-`tests/EmployeeManagement.UnitTests` uses xUnit, Moq and SQLite in memory to test critical task permissions and project rules. SQL Server and RabbitMQ are not required.
+`tests/EmployeeManagement.UnitTests` uses xUnit, Moq, SQLite in memory and an in-memory HTTP host to test task, project, user and profile rules, including controller authorization and validation. SQL Server and RabbitMQ are not required.
 
 From the repository root:
 

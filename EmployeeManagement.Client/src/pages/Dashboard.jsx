@@ -67,7 +67,7 @@ export default function Dashboard() {
             const assignee = administrator && users.data.find((item) => item.id === task.assignedToUserId)
             return <li key={task.id}><span className="task-open-marker" aria-hidden="true" /><div><h4>{task.title}</h4><p>{project?.name || `Project #${task.projectId}`}{administrator && <> · {task.assignedToUserId ? assignee ? personName(assignee) : 'Assigned' : 'Unassigned'}</>}</p></div><span className="task-state">Open</span></li>
           })}</ul> : <p className="dashboard-no-tasks">No open tasks to display.</p>}
-          <p className="dashboard-readonly">Read-only overview. Task management will be available in the next stage.</p>
+          <p className="dashboard-readonly">Read-only overview. Manage tasks from the Tasks page.</p>
         </div>}
       </section>
     </div>

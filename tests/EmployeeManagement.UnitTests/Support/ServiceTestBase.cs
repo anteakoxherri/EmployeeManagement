@@ -28,7 +28,7 @@ public abstract class ServiceTestBase : IAsyncLifetime
     protected ApplicationDbContext Context { get; private set; } = null!;
     protected Mock<IRabbitMqPublisher> Publisher { get; } = new(MockBehavior.Strict);
 
-    public async Task InitializeAsync()
+    public virtual async Task InitializeAsync()
     {
         await _connection.OpenAsync();
         _options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -100,7 +100,7 @@ public abstract class ServiceTestBase : IAsyncLifetime
         => Publisher.Verify(publisher => publisher.Publish(It.Is<BusinessEvent>(businessEvent =>
             businessEvent.EventType == type && businessEvent.ProjectId == projectId && businessEvent.TaskId == taskId)), Times.Once);
 
-    public async Task DisposeAsync()
+    public virtual async Task DisposeAsync()
     {
         if (Context is not null)
             await Context.DisposeAsync();
